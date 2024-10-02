@@ -3,72 +3,29 @@ import dbClient from '../utils/db';
 
 class AppController {
   /**
-   * Method to get the status of Redis and MongoDB clients
-   * @param {Object} req - The request object
-   * @param {Object} res - The response object
+   * should return if Redis is alive and if the DB is alive too
+   * by using the 2 utils created previously:
+   * { "redis": true, "db": true } with a status code 200
    */
-  static getStatus(req, res) {
+  static getStatus(request, response) {
     const status = {
-      redis: redisClient.isAlive(), // Check if Redis client is alive
-      db: dbClient.isAlive(), // Check if MongoDB client is alive
+      redis: redisClient.isAlive(),
+      db: dbClient.isAlive(),
     };
-    res.status(200).send(status); // Send the status as response
+    response.status(200).send(status);
   }
 
   /**
-   * Method to get the statistics of the application
-   * @param {Object} req - The request object
-   * @param {Object} res - The response object
+   * should return the number of users and files in DB:
+   * { "users": 12, "files": 1231 }
+   *  with a status code 200
    */
-  static async getStat(req, res) {
+  static async getStats(request, response) {
     const stats = {
-      users: await dbClient.nbUsers(), // Get the number of users from MongoDB
-      files: await dbClient.nbFiles(), // Get the number of files from MongoDB
+      users: await dbClient.nbUsers(),
+      files: await dbClient.nbFiles(),
     };
-    res.status(200).send(stats); // Send the statistics as response
-  }
-
-  /**
-   * Method to create a new user
-   * @param {Object} req - The request object
-   * @param {Object} res - The response object
-   */
-  static async createUser(req, res) {
-    const { email, password } = req.body; // Get email and password from request body
-    if (!email || !password) {
-      return res.status(400).send({ error: 'Missing email or password' }); // Send error if email or password is missing
-    }
-
-    try {
-      const newUser = await dbClient.createUser(email, password); // Create a new user in MongoDB
-      // Send the new user's ID and email as response
-      return res.status(201).send({ id: newUser.id, email: newUser.email });
-    } catch (error) {
-      return res.status(400).send({ error: error.message }); // Send error if user creation fails
-    }
-  }
-
-  /**
-   * Method to find a user by email
-   * @param {Object} req - The request object
-   * @param {Object} res - The response object
-   */
-  static async findUser(req, res) {
-    const { email } = req.query; // Get email from query parameters
-    if (!email) {
-      return res.status(400).send({ error: 'Missing email' }); // Send error if email is missing
-    }
-
-    try {
-      const user = await dbClient.findUser(email); // Find the user in MongoDB
-      if (!user) {
-        return res.status(404).send({ error: 'User not found' }); // Send error if user is not found
-      }
-      return res.status(200).send(user); // Send the user as response
-    } catch (error) {
-      // Send error if there is a server issue
-      return res.status(500).send({ error: error.message });
-    }
+    response.status(200).send(stats);
   }
 }
 
